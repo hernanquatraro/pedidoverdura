@@ -115,8 +115,6 @@ export default function OrderManager() {
   const [isUserCreationModalOpen, setIsUserCreationModalOpen] = useState(false)
   const [orderNotes, setOrderNotes] = useState("")
 
-  const [error, setError] = useState("")
-
   useEffect(() => {
     if (user) {
       loadData()
@@ -124,7 +122,6 @@ export default function OrderManager() {
       checkActiveReminders()
       requestNotificationPermission()
 
-      // Check reminders every minute
       const interval = setInterval(checkActiveReminders, 60000)
       return () => clearInterval(interval)
     }
@@ -151,13 +148,15 @@ export default function OrderManager() {
       if (active.length > 0 && active.length !== activeReminders.length) {
         setActiveReminders(active)
         active.forEach((reminder) => {
-          showNotification(`⏰ ${reminder.title}`, reminder.description || "Es hora de hacer tu pedido", {
+          const title = `⏰ ${reminder.title}`
+          const description = reminder.description || "Es hora de hacer tu pedido"
+          showNotification(title, description, {
             type: "reminder",
             reminderId: reminder.id,
           })
           toast({
-            title: `⏰ ${reminder.title}`,
-            description: reminder.description || "Es hora de hacer tu pedido",
+            title: title,
+            description: description,
           })
         })
       }
@@ -174,22 +173,15 @@ export default function OrderManager() {
 
   const getQuantityForToday = (product: Product) => {
     const today = new Date()
-    const day = today.getDay() // 0 = Sunday, 1 = Monday, etc.
+    const day = today.getDay()
 
-    // Sunday (0) to Wednesday (3) = qty_dom_mie
     if (day >= 0 && day <= 3) {
       return product.qty_dom_mie
-    }
-    // Thursday (4) = qty_jue
-    else if (day === 4) {
+    } else if (day === 4) {
       return product.qty_jue
-    }
-    // Friday (5) = qty_vie
-    else if (day === 5) {
+    } else if (day === 5) {
       return product.qty_vie
-    }
-    // Saturday (6) = qty_dom_mie (weekend, so use Sunday-Wednesday quantity)
-    else {
+    } else {
       return product.qty_dom_mie
     }
   }
@@ -262,7 +254,6 @@ export default function OrderManager() {
     setOrderNotes("")
     setOrderSuccess(true)
 
-    // Generate email
     const emailBody = `Hola,
 
 Pedido de: ${user.name}
@@ -276,7 +267,8 @@ ${orderNotes ? `\nAclaraciones:\n${orderNotes}` : ""}
 
 Gracias.`
 
-    const mailtoLink = `mailto:${newOrder.supplierEmail}?subject=${encodeURIComponent(`Pedido ${newOrder.id} - ${settings.companyName}`)}&body=${encodeURIComponent(emailBody)}`
+    const subject = `Pedido ${newOrder.id} - ${settings.companyName}`
+    const mailtoLink = `mailto:${newOrder.supplierEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`
     window.open(mailtoLink)
   }
 
@@ -364,7 +356,7 @@ Gracias.`
       const result = await createNewUser(userData)
 
       if (result.success) {
-        loadData() // Esto recargará los usuarios
+        loadData()
         toast({
           title: "¡Usuario creado!",
           description: `El usuario ${userData.name} ha sido creado exitosamente`,
@@ -378,14 +370,15 @@ Gracias.`
     }
   }
 
-  const onClose = () => {
-    setIsUserCreationModalOpen(false)
-  }
+  const welcomeText = `Bienvenido, ${user.name} (${user.role === "admin" ? "Administrador" : "Usuario"})`
+  const companyTitle = settings.companyName || "Gestor de Pedidos Pro"
+  const todayName = new Date().toLocaleDateString("es-ES", { weekday: "long" })
+  const dayPeriod = getDayName()
+  const suggestedText = `Cantidades sugeridas para hoy (${todayName} - ${dayPeriod})`
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       <div className="container mx-auto p-4 max-w-6xl">
-        {/* Header */}
         <header className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
@@ -393,11 +386,9 @@ Gracias.`
             </div>
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                {settings.companyName || "Gestor de Pedidos Pro"}
+                {companyTitle}
               </h1>
-              <p className="text-muted-foreground">
-                {`Bienvenido, ${user.name} (${user.role === "admin" ? "Administrador" : "Usuario"})`}
-              </p>
+              <p className="text-muted-foreground">{welcomeText}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -412,7 +403,6 @@ Gracias.`
           </div>
         </header>
 
-        {/* Success Alert */}
         {orderSuccess && (
           <Alert className="mb-6 border-green-200 bg-green-50 dark:bg-green-950">
             <CheckCircle className="h-4 w-4 text-green-600" />
@@ -439,7 +429,6 @@ Gracias.`
           </div>
         )}
 
-        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           <Card>
             <CardContent className="p-4">
@@ -487,17 +476,13 @@ Gracias.`
             )}
           </TabsList>
 
-          {/* Order Tab */}
           <TabsContent value="order" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Crear Nuevo Pedido</CardTitle>
-                <CardDescription>
-                  {`Cantidades sugeridas para hoy (${new Date().toLocaleDateString("es-ES", { weekday: "long" })} - ${getDayName()})`}
-                </CardDescription>
+                <CardDescription>{suggestedText}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Search and Filter */}
                 <div className="flex gap-4">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -523,7 +508,6 @@ Gracias.`
                   </Select>
                 </div>
 
-                {/* Products List */}
                 <ScrollArea className="h-[400px] pr-4">
                   <div className="space-y-3">
                     {filteredProducts.length === 0 ? (
@@ -534,6 +518,7 @@ Gracias.`
                       filteredProducts.map((product) => {
                         const suggestedQty = getQuantityForToday(product)
                         const currentQty = currentOrder[product.id] ?? 0
+                        const suggestedForToday = `Sugerido para hoy (${getDayName()}): ${suggestedQty} ${product.unit}`
 
                         return (
                           <Card key={product.id} className="p-4">
@@ -544,9 +529,7 @@ Gracias.`
                                   <Badge variant="secondary">{product.category}</Badge>
                                 </div>
                                 <p className="text-sm text-muted-foreground">{product.unit}</p>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  {`Sugerido para hoy (${getDayName()}): ${suggestedQty} ${product.unit}`}
-                                </p>
+                                <p className="text-xs text-muted-foreground mt-1">{suggestedForToday}</p>
                               </div>
                               <div className="flex items-center gap-3">
                                 <Button
@@ -575,7 +558,6 @@ Gracias.`
 
                 <Separator />
 
-                {/* Order Summary */}
                 <div className="space-y-2 mb-4">
                   <Label htmlFor="orderNotes">Aclaraciones para el proveedor (opcional)</Label>
                   <Textarea
@@ -632,7 +614,6 @@ Gracias.`
             </Card>
           </TabsContent>
 
-          {/* History Tab */}
           <TabsContent value="history" className="space-y-6">
             <Card>
               <CardHeader>
@@ -655,85 +636,92 @@ Gracias.`
                     {displayOrders.length === 0 ? (
                       <div className="text-center py-8 text-muted-foreground">No hay pedidos registrados</div>
                     ) : (
-                      displayOrders.map((order) => (
-                        <Card key={order.id} className="p-4">
-                          <div className="flex justify-between items-start mb-3">
-                            <div>
-                              <p className="font-semibold">
-                                {order.date.toLocaleDateString("es-ES", {
-                                  weekday: "long",
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                })}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                {`${order.date.toLocaleTimeString("es-ES", {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}${user.role === "admin" ? ` • ${order.userName}` : ""}`}
-                              </p>
-                            </div>
-                            <div className="text-right flex items-center gap-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleCopyOrder(order)}
-                                className="h-8 w-8 p-0"
-                              >
-                                <Copy className="h-3 w-3" />
-                              </Button>
+                      displayOrders.map((order) => {
+                        const orderDate = order.date.toLocaleDateString("es-ES", {
+                          weekday: "long",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })
+                        const orderTime = order.date.toLocaleTimeString("es-ES", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                        const orderInfo = user.role === "admin" ? `${orderTime} • ${order.userName}` : orderTime
+
+                        return (
+                          <Card key={order.id} className="p-4">
+                            <div className="flex justify-between items-start mb-3">
                               <div>
-                                <div className="flex items-center gap-2 mb-1">
-                                  <Badge
-                                    variant={
-                                      order.status === "delivered"
-                                        ? "default"
-                                        : order.status === "sent"
-                                          ? "secondary"
-                                          : "outline"
-                                    }
-                                  >
-                                    {order.status === "delivered" && <CheckCircle className="h-3 w-3 mr-1" />}
-                                    {order.status === "sent" && <Send className="h-3 w-3 mr-1" />}
-                                    {order.status === "pending" && <Clock className="h-3 w-3 mr-1" />}
-                                    {order.status === "delivered"
-                                      ? "Entregado"
-                                      : order.status === "sent"
-                                        ? "Enviado"
-                                        : "Pendiente"}
-                                  </Badge>
-                                  {user.role === "admin" && (
-                                    <Select
-                                      value={order.status}
-                                      onValueChange={(status: Order["status"]) => {
-                                        updateOrderStatus(order.id, status)
-                                        setOrders((prev) => prev.map((o) => (o.id === order.id ? { ...o, status } : o)))
-                                      }}
+                                <p className="font-semibold">{orderDate}</p>
+                                <p className="text-sm text-muted-foreground">{orderInfo}</p>
+                              </div>
+                              <div className="text-right flex items-center gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleCopyOrder(order)}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <Copy className="h-3 w-3" />
+                                </Button>
+                                <div>
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <Badge
+                                      variant={
+                                        order.status === "delivered"
+                                          ? "default"
+                                          : order.status === "sent"
+                                            ? "secondary"
+                                            : "outline"
+                                      }
                                     >
-                                      <SelectTrigger className="w-32 h-8">
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="pending">Pendiente</SelectItem>
-                                        <SelectItem value="sent">Enviado</SelectItem>
-                                        <SelectItem value="delivered">Entregado</SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                  )}
+                                      {order.status === "delivered" && <CheckCircle className="h-3 w-3 mr-1" />}
+                                      {order.status === "sent" && <Send className="h-3 w-3 mr-1" />}
+                                      {order.status === "pending" && <Clock className="h-3 w-3 mr-1" />}
+                                      {order.status === "delivered"
+                                        ? "Entregado"
+                                        : order.status === "sent"
+                                          ? "Enviado"
+                                          : "Pendiente"}
+                                    </Badge>
+                                    {user.role === "admin" && (
+                                      <Select
+                                        value={order.status}
+                                        onValueChange={(status: Order["status"]) => {
+                                          updateOrderStatus(order.id, status)
+                                          setOrders((prev) =>
+                                            prev.map((o) => (o.id === order.id ? { ...o, status } : o)),
+                                          )
+                                        }}
+                                      >
+                                        <SelectTrigger className="w-32 h-8">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="pending">Pendiente</SelectItem>
+                                          <SelectItem value="sent">Enviado</SelectItem>
+                                          <SelectItem value="delivered">Entregado</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                          <div className="space-y-1">
-                            {order.items.map((item, index) => (
-                              <div key={index} className="flex justify-between text-sm">
-                                <span>{`${item.name}: ${item.quantity} ${item.unit}`}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </Card>
-                      ))
+                            <div className="space-y-1">
+                              {order.items.map((item, index) => {
+                                const itemText = `${item.name}: ${item.quantity} ${item.unit}`
+                                return (
+                                  <div key={index} className="flex justify-between text-sm">
+                                    <span>{itemText}</span>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          </Card>
+                        )
+                      })
                     )}
                   </div>
                 </ScrollArea>
@@ -741,7 +729,6 @@ Gracias.`
             </Card>
           </TabsContent>
 
-          {/* Settings Tab */}
           <TabsContent value="settings" className="space-y-6">
             <div className="grid gap-6">
               <Card>
@@ -810,43 +797,45 @@ Gracias.`
                       </div>
                       <ScrollArea className="h-[300px]">
                         <div className="space-y-2">
-                          {products.map((product) => (
-                            <div key={product.id} className="flex items-center justify-between p-3 border rounded-lg">
-                              <div>
-                                <p className="font-semibold">{product.name}</p>
-                                <p className="text-sm text-muted-foreground">
-                                  {`${product.category} • ${product.unit}`}
-                                </p>
+                          {products.map((product) => {
+                            const productInfo = `${product.category} • ${product.unit}`
+                            return (
+                              <div key={product.id} className="flex items-center justify-between p-3 border rounded-lg">
+                                <div>
+                                  <p className="font-semibold">{product.name}</p>
+                                  <p className="text-sm text-muted-foreground">{productInfo}</p>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      setEditingProduct(product)
+                                      setIsProductModalOpen(true)
+                                    }}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      setDeleteConfirm({ type: "product", id: product.id, name: product.name })
+                                    }
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
                               </div>
-                              <div className="flex gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => {
-                                    setEditingProduct(product)
-                                    setIsProductModalOpen(true)
-                                  }}
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    setDeleteConfirm({ type: "product", id: product.id, name: product.name })
-                                  }
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </div>
-                          ))}
+                            )
+                          })}
                         </div>
                       </ScrollArea>
                     </div>
                   </CardContent>
                 </Card>
               )}
+
               <Card>
                 <CardHeader>
                   <CardTitle>Recordatorios de Pedidos</CardTitle>
@@ -860,46 +849,49 @@ Gracias.`
                     </Button>
                     <ScrollArea className="h-[300px]">
                       <div className="space-y-2">
-                        {reminders.map((reminder) => (
-                          <div key={reminder.id} className="flex items-center justify-between p-3 border rounded-lg">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <p className="font-semibold">{reminder.title}</p>
-                                <Badge variant={reminder.active ? "default" : "secondary"}>
-                                  {reminder.active ? "Activo" : "Inactivo"}
-                                </Badge>
+                        {reminders.map((reminder) => {
+                          const daysText = reminder.dayOfWeek
+                            .map((day: number) => ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"][day])
+                            .join(", ")
+                          const timeText = `${daysText} • ${reminder.startTime} - ${reminder.endTime}`
+
+                          return (
+                            <div key={reminder.id} className="flex items-center justify-between p-3 border rounded-lg">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <p className="font-semibold">{reminder.title}</p>
+                                  <Badge variant={reminder.active ? "default" : "secondary"}>
+                                    {reminder.active ? "Activo" : "Inactivo"}
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground mb-1">{reminder.description}</p>
+                                <p className="text-xs text-muted-foreground">{timeText}</p>
                               </div>
-                              <p className="text-sm text-muted-foreground mb-1">{reminder.description}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {`${reminder.dayOfWeek
-                                  .map((day: number) => ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"][day])
-                                  .join(", ")} • ${reminder.startTime} - ${reminder.endTime}`}
-                              </p>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setEditingReminder(reminder)
+                                    setIsReminderModalOpen(true)
+                                  }}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    deleteReminder(reminder.id)
+                                    loadReminders()
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
-                            <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  setEditingReminder(reminder)
-                                  setIsReminderModalOpen(true)
-                                }}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  deleteReminder(reminder.id)
-                                  loadReminders()
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
+                          )
+                        })}
                         {reminders.length === 0 && (
                           <div className="text-center py-8 text-muted-foreground">
                             <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -914,7 +906,6 @@ Gracias.`
             </div>
           </TabsContent>
 
-          {/* Admin Tab */}
           {user.role === "admin" && (
             <TabsContent value="admin" className="space-y-6">
               <Card>
@@ -929,31 +920,34 @@ Gracias.`
                   </Button>
                   <ScrollArea className="h-[400px]">
                     <div className="space-y-3">
-                      {users.map((userData) => (
-                        <div key={userData.id} className="flex items-center justify-between p-4 border rounded-lg">
-                          <div>
-                            <p className="font-semibold">{userData.name}</p>
-                            <p className="text-sm text-muted-foreground">{userData.email}</p>
-                            <Badge variant={userData.role === "admin" ? "default" : "secondary"}>
-                              {userData.role === "admin" ? "Administrador" : "Usuario"}
-                            </Badge>
+                      {users.map((userData) => {
+                        const userDate = new Date(userData.createdAt).toLocaleDateString("es-ES")
+                        return (
+                          <div key={userData.id} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div>
+                              <p className="font-semibold">{userData.name}</p>
+                              <p className="text-sm text-muted-foreground">{userData.email}</p>
+                              <Badge variant={userData.role === "admin" ? "default" : "secondary"}>
+                                {userData.role === "admin" ? "Administrador" : "Usuario"}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm text-muted-foreground">{userDate}</p>
+                              {userData.id !== user.id && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    setDeleteConfirm({ type: "user", id: userData.id, name: userData.name })
+                                  }
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm text-muted-foreground">
-                              {new Date(userData.createdAt).toLocaleDateString("es-ES")}
-                            </p>
-                            {userData.id !== user.id && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setDeleteConfirm({ type: "user", id: userData.id, name: userData.name })}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   </ScrollArea>
                 </CardContent>
@@ -962,7 +956,6 @@ Gracias.`
           )}
         </Tabs>
 
-        {/* Product Modal */}
         <ProductModal
           isOpen={isProductModalOpen}
           onClose={() => {
@@ -974,7 +967,6 @@ Gracias.`
           categories={allCategories}
         />
 
-        {/* Delete Confirmation Dialog */}
         <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
