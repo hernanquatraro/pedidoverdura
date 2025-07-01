@@ -114,7 +114,7 @@ export default function OrderManager() {
   const [isBulkUploadModalOpen, setIsBulkUploadModalOpen] = useState(false)
   const [isUserCreationModalOpen, setIsUserCreationModalOpen] = useState(false)
   const [orderNotes, setOrderNotes] = useState("")
-  
+
   const [error, setError] = useState("")
 
   useEffect(() => {
@@ -175,7 +175,7 @@ export default function OrderManager() {
   const getQuantityForToday = (product: Product) => {
     const today = new Date()
     const day = today.getDay() // 0 = Sunday, 1 = Monday, etc.
-    
+
     // Sunday (0) to Wednesday (3) = qty_dom_mie
     if (day >= 0 && day <= 3) {
       return product.qty_dom_mie
@@ -197,7 +197,7 @@ export default function OrderManager() {
   const getDayName = () => {
     const today = new Date()
     const day = today.getDay()
-    
+
     if (day >= 0 && day <= 3) {
       return "Dom-Mié"
     } else if (day === 4) {
@@ -270,9 +270,7 @@ Fecha: ${new Date().toLocaleDateString("es-ES")}
 
 Productos solicitados:
 
-${orderItems
-  .map((item) => `- ${item.name}: ${item.quantity} ${item.unit}`)
-  .join("\n")}
+${orderItems.map((item) => `- ${item.name}: ${item.quantity} ${item.unit}`).join("\n")}
 
 ${orderNotes ? `\nAclaraciones:\n${orderNotes}` : ""}
 
@@ -382,7 +380,6 @@ Gracias.`
 
   const onClose = () => {
     setIsUserCreationModalOpen(false)
-    
   }
 
   return (
@@ -496,7 +493,8 @@ Gracias.`
               <CardHeader>
                 <CardTitle>Crear Nuevo Pedido</CardTitle>
                 <CardDescription>
-                  Cantidades sugeridas para hoy ({new Date().toLocaleDateString("es-ES", { weekday: "long" })} - {getDayName()})
+                  Cantidades sugeridas para hoy ({new Date().toLocaleDateString("es-ES", { weekday: "long" })} -{" "}
+                  {getDayName()})
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -546,9 +544,7 @@ Gracias.`
                                   <h3 className="font-semibold">{product.name}</h3>
                                   <Badge variant="secondary">{product.category}</Badge>
                                 </div>
-                                <p className="text-sm text-muted-foreground">
-                                  {product.unit}
-                                </p>
+                                <p className="text-sm text-muted-foreground">{product.unit}</p>
                                 <p className="text-xs text-muted-foreground mt-1">
                                   Sugerido para hoy ({getDayName()}): {suggestedQty} {product.unit}
                                 </p>
@@ -730,16 +726,17 @@ Gracias.`
                                 </div>
                               </div>
                             </div>
-                            <div className="space-y-1">
-                              {order.items.map((item, index) => (
-                                <div key={index} className="flex justify-between text-sm">
-                                  <span>
-                                    {item.name}: {item.quantity} {item.unit}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          </Card>
+                          </div>
+                          <div className="space-y-1">
+                            {order.items.map((item, index) => (
+                              <div key={index} className="flex justify-between text-sm">
+                                <span>
+                                  {item.name}: {item.quantity} {item.unit}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </Card>
                       ))
                     )}
                   </div>
@@ -1031,5 +1028,5 @@ Gracias.`
         />
       </div>
     </div>
-  )\
+  )
 }
