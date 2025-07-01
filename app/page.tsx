@@ -874,7 +874,7 @@ export default function OrderManager() {
                                 <p className="text-sm text-muted-foreground mb-1">{reminder.description}</p>
                                 <p className="text-xs text-muted-foreground">{timeText}</p>
                               </div>
-                              <div className="flex gap-2">
+                              <div className="flex items-center gap-2">
                                 <Button
                                   variant="outline"
                                   size="sm"
