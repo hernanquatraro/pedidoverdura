@@ -396,7 +396,7 @@ Gracias.`
                 {settings.companyName || "Gestor de Pedidos Pro"}
               </h1>
               <p className="text-muted-foreground">
-                Bienvenido, {user.name} ({user.role === "admin" ? "Administrador" : "Usuario"})
+                {`Bienvenido, ${user.name} (${user.role === "admin" ? "Administrador" : "Usuario"})`}
               </p>
             </div>
           </div>
@@ -466,7 +466,7 @@ Gracias.`
         </div>
 
         <Tabs defaultValue="order" className="space-y-6">
-          <TabsList className={`grid w-full ${user.role === "admin" ? "grid-cols-4" : "grid-cols-3"}`}>
+          <TabsList className={user.role === "admin" ? "grid w-full grid-cols-4" : "grid w-full grid-cols-3"}>
             <TabsTrigger value="order" className="flex items-center gap-2">
               <ShoppingCart className="h-4 w-4" />
               Nuevo Pedido
@@ -493,8 +493,7 @@ Gracias.`
               <CardHeader>
                 <CardTitle>Crear Nuevo Pedido</CardTitle>
                 <CardDescription>
-                  Cantidades sugeridas para hoy ({new Date().toLocaleDateString("es-ES", { weekday: "long" })} -{" "}
-                  {getDayName()})
+                  {`Cantidades sugeridas para hoy (${new Date().toLocaleDateString("es-ES", { weekday: "long" })} - ${getDayName()})`}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -546,7 +545,7 @@ Gracias.`
                                 </div>
                                 <p className="text-sm text-muted-foreground">{product.unit}</p>
                                 <p className="text-xs text-muted-foreground mt-1">
-                                  Sugerido para hoy ({getDayName()}): {suggestedQty} {product.unit}
+                                  {`Sugerido para hoy (${getDayName()}): ${suggestedQty} ${product.unit}`}
                                 </p>
                               </div>
                               <div className="flex items-center gap-3">
@@ -669,11 +668,10 @@ Gracias.`
                                 })}
                               </p>
                               <p className="text-sm text-muted-foreground">
-                                {order.date.toLocaleTimeString("es-ES", {
+                                {`${order.date.toLocaleTimeString("es-ES", {
                                   hour: "2-digit",
                                   minute: "2-digit",
-                                })}
-                                {user.role === "admin" && ` • ${order.userName}`}
+                                })}${user.role === "admin" ? ` • ${order.userName}` : ""}`}
                               </p>
                             </div>
                             <div className="text-right flex items-center gap-2">
@@ -730,9 +728,7 @@ Gracias.`
                           <div className="space-y-1">
                             {order.items.map((item, index) => (
                               <div key={index} className="flex justify-between text-sm">
-                                <span>
-                                  {item.name}: {item.quantity} {item.unit}
-                                </span>
+                                <span>{`${item.name}: ${item.quantity} ${item.unit}`}</span>
                               </div>
                             ))}
                           </div>
@@ -819,7 +815,7 @@ Gracias.`
                               <div>
                                 <p className="font-semibold">{product.name}</p>
                                 <p className="text-sm text-muted-foreground">
-                                  {product.category} • {product.unit}
+                                  {`${product.category} • ${product.unit}`}
                                 </p>
                               </div>
                               <div className="flex gap-2">
@@ -875,10 +871,9 @@ Gracias.`
                               </div>
                               <p className="text-sm text-muted-foreground mb-1">{reminder.description}</p>
                               <p className="text-xs text-muted-foreground">
-                                {reminder.dayOfWeek
+                                {`${reminder.dayOfWeek
                                   .map((day: number) => ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"][day])
-                                  .join(", ")}{" "}
-                                • {reminder.startTime} - {reminder.endTime}
+                                  .join(", ")} • ${reminder.startTime} - ${reminder.endTime}`}
                               </p>
                             </div>
                             <div className="flex gap-2">
