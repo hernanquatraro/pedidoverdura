@@ -148,7 +148,7 @@ export default function OrderManager() {
       if (active.length > 0 && active.length !== activeReminders.length) {
         setActiveReminders(active)
         active.forEach((reminder) => {
-          const title = `⏰ ${reminder.title}`
+          const title = "⏰ " + reminder.title
           const description = reminder.description || "Es hora de hacer tu pedido"
           showNotification(title, description, {
             type: "reminder",
@@ -256,27 +256,30 @@ export default function OrderManager() {
 
     const itemsList = orderItems
       .map((item) => {
-        return `- ${item.name}: ${item.quantity} ${item.unit}`
+        return "- " + item.name + ": " + item.quantity + " " + item.unit
       })
       .join("\n")
 
-    const clarifications = orderNotes ? `\n\nAclaraciones:\n${orderNotes}` : ""
+    const clarifications = orderNotes ? "\n\nAclaraciones:\n" + orderNotes : ""
 
-    const emailBody = `Hola,
+    const emailBody =
+      "Hola,\n\nPedido de: " +
+      user.name +
+      "\nFecha: " +
+      new Date().toLocaleDateString("es-ES") +
+      "\n\nProductos solicitados:\n\n" +
+      itemsList +
+      clarifications +
+      "\n\nGracias."
 
-Pedido de: ${user.name}
-Fecha: ${new Date().toLocaleDateString("es-ES")}
-
-Productos solicitados:
-
-${itemsList}${clarifications}
-
-Gracias.`
-
-    const subject = `Pedido ${newOrder.id} - ${settings.companyName}`
-    const mailtoLink = `mailto:${newOrder.supplierEmail}?subject=${encodeURIComponent(
-      subject,
-    )}&body=${encodeURIComponent(emailBody)}`
+    const subject = "Pedido " + newOrder.id + " - " + settings.companyName
+    const mailtoLink =
+      "mailto:" +
+      newOrder.supplierEmail +
+      "?subject=" +
+      encodeURIComponent(subject) +
+      "&body=" +
+      encodeURIComponent(emailBody)
     window.open(mailtoLink)
   }
 
@@ -367,7 +370,7 @@ Gracias.`
         loadData()
         toast({
           title: "¡Usuario creado!",
-          description: `El usuario ${userData.name} ha sido creado exitosamente`,
+          description: "El usuario " + userData.name + " ha sido creado exitosamente",
         })
         return { success: true }
       } else {
@@ -378,11 +381,11 @@ Gracias.`
     }
   }
 
-  const welcomeText = `Bienvenido, ${user.name} (${user.role === "admin" ? "Administrador" : "Usuario"})`
+  const welcomeText = "Bienvenido, " + user.name + " (" + (user.role === "admin" ? "Administrador" : "Usuario") + ")"
   const companyTitle = settings.companyName || "Gestor de Pedidos Pro"
   const todayName = new Date().toLocaleDateString("es-ES", { weekday: "long" })
   const dayPeriod = getDayName()
-  const suggestedText = `Cantidades sugeridas para hoy (${todayName} - ${dayPeriod})`
+  const suggestedText = "Cantidades sugeridas para hoy (" + todayName + " - " + dayPeriod + ")"
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
@@ -429,7 +432,7 @@ Gracias.`
               <Alert key={reminder.id} className="border-orange-200 bg-orange-50 dark:bg-orange-950">
                 <Bell className="h-4 w-4 text-orange-600" />
                 <AlertDescription className="text-orange-800 dark:text-orange-200">
-                  <strong>{`⏰ ${reminder.title}`}</strong>
+                  <strong>{"⏰ " + reminder.title}</strong>
                   {reminder.description && <p className="mt-1">{reminder.description}</p>}
                 </AlertDescription>
               </Alert>
@@ -526,7 +529,8 @@ Gracias.`
                       filteredProducts.map((product) => {
                         const suggestedQty = getQuantityForToday(product)
                         const currentQty = currentOrder[product.id] ?? 0
-                        const suggestedForToday = `Sugerido para hoy (${getDayName()}): ${suggestedQty} ${product.unit}`
+                        const suggestedForToday =
+                          "Sugerido para hoy (" + getDayName() + "): " + suggestedQty + " " + product.unit
 
                         return (
                           <Card key={product.id} className="p-4">
@@ -655,7 +659,7 @@ Gracias.`
                           hour: "2-digit",
                           minute: "2-digit",
                         })
-                        const orderInfo = user.role === "admin" ? `${orderTime} • ${order.userName}` : orderTime
+                        const orderInfo = user.role === "admin" ? orderTime + " • " + order.userName : orderTime
 
                         return (
                           <Card key={order.id} className="p-4">
@@ -719,7 +723,7 @@ Gracias.`
                             </div>
                             <div className="space-y-1">
                               {order.items.map((item, index) => {
-                                const itemText = `${item.name}: ${item.quantity} ${item.unit}`
+                                const itemText = item.name + ": " + item.quantity + " " + item.unit
                                 return (
                                   <div key={index} className="flex justify-between text-sm">
                                     <span>{itemText}</span>
@@ -806,7 +810,7 @@ Gracias.`
                       <ScrollArea className="h-[300px]">
                         <div className="space-y-2">
                           {products.map((product) => {
-                            const productInfo = `${product.category} • ${product.unit}`
+                            const productInfo = product.category + " • " + product.unit
                             return (
                               <div key={product.id} className="flex items-center justify-between p-3 border rounded-lg">
                                 <div>
@@ -861,7 +865,7 @@ Gracias.`
                           const daysText = reminder.dayOfWeek
                             .map((day: number) => ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"][day])
                             .join(", ")
-                          const timeText = `${daysText} • ${reminder.startTime} - ${reminder.endTime}`
+                          const timeText = daysText + " • " + reminder.startTime + " - " + reminder.endTime
 
                           return (
                             <div key={reminder.id} className="flex items-center justify-between p-3 border rounded-lg">
@@ -980,9 +984,8 @@ Gracias.`
             <AlertDialogHeader>
               <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
               <AlertDialogDescription>
-                {`Esta acción no se puede deshacer. Se eliminará permanentemente ${
-                  deleteConfirm?.type === "product" ? "el producto" : "el usuario"
-                } "${deleteConfirm?.name}".`}
+                Esta acción no se puede deshacer. Se eliminará permanentemente{" "}
+                {deleteConfirm?.type === "product" ? "el producto" : "el usuario"} "{deleteConfirm?.name}".
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
